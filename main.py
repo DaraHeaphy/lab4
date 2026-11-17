@@ -3,6 +3,7 @@ import yaml
 from os import path as opath
 
 from mypylibs.optical_flow import OFConfig, run_optical_flow
+from mypylibs.kalman import KFConfig, run_kalman, reappearance_errors
 
 ROOT_IN = 'in'
 ROOT_OUT = 'out'
@@ -34,6 +35,15 @@ def main(case: int):
     )
     n_valid = sum(m.valid for m in meas)
     print(f'[{case:02}] optical flow: {n_valid}/{len(meas)} frames with a measurement')
+
+    # Step 3: Kalman filter (constant velocity, corrects position + velocity)
+    kf_cfg = KFConfig.from_dict(params.get('kalman'))
+    steps = run_kalman(meas, kf_cfg, csv_out=opath.join(ROOT_OUT, f'{case:02}_kf.csv'))
+    n_rej = sum(s.rejected for s in steps)
+    print(f'[{case:02}] kalman: {sum(s.corrected for s in steps)} corrections, {n_rej} gated out')
+    for e in reappearance_errors(steps, min_gap=10):
+        print(f'[{case:02}]   back after {e["gap"]:3d} frames at #{e["frame"]}: '
+              f'prediction off by {e["pos_err"]:.0f} px')
 
 
 if __name__ == '__main__':
