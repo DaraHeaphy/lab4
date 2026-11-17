@@ -1,7 +1,7 @@
 import yaml
 
 from os import path as opath
-
+from mypylibs.tracking import run_tracking_video
 from mypylibs.optical_flow import OFConfig, run_optical_flow
 from mypylibs.kalman import KFConfig, run_kalman, reappearance_errors
 
@@ -44,6 +44,14 @@ def main(case: int):
     for e in reappearance_errors(steps, min_gap=10):
         print(f'[{case:02}]   back after {e["gap"]:3d} frames at #{e["frame"]}: '
               f'prediction off by {e["pos_err"]:.0f} px')
+    
+        # Step 4: Object tracking and trajectory visualisation
+    run_tracking_video(
+        video_in,
+        opath.join(ROOT_OUT, f'{case:02}_tr.mp4'),
+        meas,
+        steps
+    )
 
 
 if __name__ == '__main__':
