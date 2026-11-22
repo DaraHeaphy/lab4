@@ -44,14 +44,22 @@ def main(case: int):
     for e in reappearance_errors(steps, min_gap=10):
         print(f'[{case:02}]   back after {e["gap"]:3d} frames at #{e["frame"]}: '
               f'prediction off by {e["pos_err"]:.0f} px')
-    
-        # Step 4: Object tracking and trajectory visualisation
-    run_tracking_video(
+
+    # Steps 4-5: split trajectories after each reappearance and plot the whole process
+    div = run_tracking_video(
         video_in,
         opath.join(ROOT_OUT, f'{case:02}_tr.mp4'),
         meas,
-        steps
+        steps,
+        kf_cfg,
+        min_occlusion=10,
+        snapshot_out=opath.join(ROOT_OUT, f'{case:02}_tr.png'),
     )
+    for d in div:
+        e = d['divergence']
+        if e:
+            print(f'[{case:02}]   counterfactual from #{d["frame"]}: '
+                  f'{e[min(10, len(e) - 1)]:.0f} px apart after 10 frames, {e[-1]:.0f} px after {len(e)}')
 
 
 if __name__ == '__main__':
