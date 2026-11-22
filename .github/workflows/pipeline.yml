@@ -11,12 +11,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      
+
       - name: Run Python Script (main.py)
         run: |
           docker run --rm \
           -v ${{ github.workspace }}:/workspace \
-          jfhernandeza/ul-cs6524-cv-python-latex:lab01 python main.py
+          jfhernandeza/ul-cs6524-cv-python-latex:lab01 \
+          sh -c "python -m pip install opencv-python-headless && python main.py"
       
       - name: Compile LaTeX Document (report.tex)
         run: |
